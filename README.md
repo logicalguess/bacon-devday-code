@@ -43,7 +43,7 @@ Usage:
 
         registrationPending = registrationWire.responsePending
         registrationSent = registrationWire.requestEntered
-        registrationResponse = registrationWire.responseValue
+        registrationResponse = registrationWire.responseStream
 
 
 ## The Assignment
