@@ -60,8 +60,6 @@
           // username
           username = Bacon.$.textFieldValue(usernameField)
 
-          usernameModel = new Bacon.Model(username)
-
           userNameWire = wireAjaxOnChange(username, function(user) { return { url : "/usernameavailable/" + user } }, true)
 
           usernameEntered = userNameWire.requestEntered
