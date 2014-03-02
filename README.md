@@ -1,3 +1,52 @@
+## Extracting some patterns on the flows branch
+
+          function wireAjaxOnChange(input, urlFunc, init) {
+              var request = input.changes().filter(nonEmpty).skipDuplicates()
+                      .throttle(300)
+                      .map(urlFunc)
+
+              var response = request.ajax()
+
+              return {
+                  requestEntered: input.map(nonEmpty),
+                  responsePending: response.pending(request),
+                  responseValue: response.toProperty(init)
+              }
+          }
+
+          function wireAjaxOnEvent(eventSource, eventName, url, dataFormula, init) {
+
+              var event = eventSource.asEventStream(eventName).do(".preventDefault")
+              var request = Bacon.combineTemplate({
+                  type: "post",
+                  url : url,
+                  contentType: "application/json",
+                  data: JSON.stringify(dataFormula)
+              }).sampledBy(event)
+              var response = request.ajax()
+
+              return {
+                  requestEntered: request.map(true).toProperty(false),
+                  responsePending: response.pending(request),
+                  responseStream: response
+              }
+          }
+Usage:
+
+        userNameWire = wireAjaxOnChange(username, function(user) { return { url : "/usernameavailable/" + user } }, true)
+
+        usernameEntered = userNameWire.requestEntered
+        usernameAvailable = userNameWire.responseValue
+        availabilityPending = userNameWire.responsePending
+
+
+        var registrationWire = wireAjaxOnEvent(registerButton, "click", "/register", { username: username, fullname: fullname })
+
+        registrationPending = registrationWire.responsePending
+        registrationSent = registrationWire.requestEntered
+        registrationResponse = registrationWire.responseValue
+
+
 ## The Assignment
 
 Implement a Registration Form that

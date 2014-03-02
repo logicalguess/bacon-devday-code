@@ -15,6 +15,39 @@
       function setEnabled(element, enabled) {
         element.attr("disabled", !enabled)
       }
+
+      function wireAjaxOnChange(input, urlFunc, init) {
+          var request = input.changes().filter(nonEmpty).skipDuplicates()
+                  .throttle(300)
+                  .map(urlFunc)
+
+          var response = request.ajax()
+
+          return {
+              requestEntered: input.map(nonEmpty),
+              responsePending: response.pending(request),
+              responseValue: response.toProperty(init)
+          }
+      }
+
+      function wireAjaxOnEvent(eventSource, eventName, url, dataFormula, init) {
+
+          var event = eventSource.asEventStream(eventName).do(".preventDefault")
+          var request = Bacon.combineTemplate({
+              type: "post",
+              url : url,
+              contentType: "application/json",
+              data: JSON.stringify(dataFormula)
+          }).sampledBy(event)
+          var response = request.ajax()
+
+          return {
+              requestEntered: request.map(true).toProperty(false),
+              responsePending: response.pending(request),
+              responseStream: response
+          }
+      }
+
       $(function() {
           // fields
           usernameField = $("#username input")
@@ -26,31 +59,29 @@
 
           // username
           username = Bacon.UI.textFieldValue(usernameField)
-          usernameEntered = username.map(nonEmpty)
-          availabilityRequest = username.changes().filter(nonEmpty).skipDuplicates()
-            .throttle(300)
-            .map(function(user) { return { url : "/usernameavailable/" + user } })
-          availabilityResponse = availabilityRequest.ajax()
-          usernameAvailable = availabilityResponse.toProperty(true)
-          availabilityPending = availabilityResponse.pending(availabilityRequest)
+
+          userNameWire = wireAjaxOnChange(username, function(user) { return { url : "/usernameavailable/" + user } }, true)
+
+          usernameEntered = userNameWire.requestEntered
+          usernameAvailable = userNameWire.responseValue
+          availabilityPending = userNameWire.responsePending
+
+
+          usernameAvailable.not().and(availabilityPending.not()).onValue(setVisibility, unavailabilityLabel)
+          availabilityPending.onValue(setVisibility, usernameAjaxIndicator)
+
 
           // fullname
           fullname = Bacon.UI.textFieldValue(fullnameField)
           fullnameEntered = fullname.map(nonEmpty)
 
           // registration
-          registerClick = registerButton.asEventStream("click").do(".preventDefault")
-          registrationRequest = username.combine(fullname, function(u, f) {
-              return {
-                type: "post",
-                url : "/register",
-                contentType: "application/json",
-                data: JSON.stringify({ username: u, fullname: f })
-              }
-          }).sampledBy(registerClick)
-          registrationResponse = registrationRequest.ajax()
-          registrationPending = registrationResponse.pending(registrationRequest)
-          registrationSent = registrationRequest.map(true).toProperty(false)
+          var registrationWire = wireAjaxOnEvent(registerButton, "click", "/register", { username: username, fullname: fullname })
+
+          registrationPending = registrationWire.responsePending
+          registrationSent = registrationWire.requestEntered
+          registrationResponse = registrationWire.responseValue
+
 
           // button enabled state
           buttonEnabled = usernameEntered.and(fullnameEntered).and(usernameAvailable)
@@ -58,8 +89,6 @@
 
           // side-effects
           buttonEnabled.onValue(setEnabled, registerButton)
-          usernameAvailable.not().and(availabilityPending.not()).onValue(setVisibility, unavailabilityLabel)
-          availabilityPending.onValue(setVisibility, usernameAjaxIndicator)
           registrationPending.onValue(setVisibility, registerAjaxIndicator)
           registrationResponse.map("Thanks dude!").onValue($("#result"), "text")
       })
