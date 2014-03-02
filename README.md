@@ -75,7 +75,7 @@ Implement a Registration Form that
 ## Starting point
 
 * [HTML page](index.html) with the required form elements
-* Javascript imports for Bacon.js, Bacon.UI.js, jQuery.js
+* Javascript imports for Bacon.js, bacon.jquery.js, jQuery.js
 * Javascript stub embedded in the HTML file
 * Implementation of the username property
 * The required AJAX services are mocked for you using [Mockjax](https://github.com/appendto/jquery-mockjax), so you don't need any background server.
