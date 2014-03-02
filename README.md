@@ -14,8 +14,7 @@
               }
           }
 
-          function wireAjaxOnEvent(eventSource, eventName, url, dataFormula, init) {
-
+          function wireAjaxOnEvent(eventSource, eventName, url, dataFormula) {
               var event = eventSource.asEventStream(eventName).do(".preventDefault")
               var request = Bacon.combineTemplate({
                   type: "post",
