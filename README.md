@@ -32,14 +32,14 @@
           }
 Usage:
 
-        userNameWire = wireAjaxOnChange(username, function(user) { return { url : "/usernameavailable/" + user } }, true)
+        userNameWire = wireAjaxOnChange(Bacon.UI.textFieldValue($("#username input")), function(user) { return { url : "/usernameavailable/" + user } }, true)
 
         usernameEntered = userNameWire.requestEntered
         usernameAvailable = userNameWire.responseValue
         availabilityPending = userNameWire.responsePending
 
 
-        var registrationWire = wireAjaxOnEvent(registerButton, "click", "/register", { username: username, fullname: fullname })
+        var registrationWire = wireAjaxOnEvent($("#register button"), "click", "/register", { username: username, fullname: fullname })
 
         registrationPending = registrationWire.responsePending
         registrationSent = registrationWire.requestEntered
