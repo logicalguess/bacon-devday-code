@@ -9,7 +9,7 @@
 
               return {
                   requestEntered: input.map(nonEmpty),
-                  responsePending: response.pending(request),
+                  responsePending: request.awaiting(response),
                   responseValue: response.toProperty(init)
               }
           }
@@ -26,13 +26,13 @@
 
               return {
                   requestEntered: request.map(true).toProperty(false),
-                  responsePending: response.pending(request),
+                  responsePending: request.awaiting(response),
                   responseStream: response
               }
           }
 Usage:
 
-        userNameWire = wireAjaxOnChange(Bacon.UI.textFieldValue($("#username input")),
+        userNameWire = wireAjaxOnChange(Bacon.$.textFieldValue($("#username input")),
             function(user) { return { url : "/usernameavailable/" + user } }, true)
 
         usernameEntered = userNameWire.requestEntered
@@ -41,7 +41,7 @@ Usage:
 
 
         var registrationWire = wireAjaxOnEvent($("#register button"), "click", "/register",
-            { username: Bacon.UI.textFieldValue($("#username input")), fullname: Bacon.UI.textFieldValue($("#fullname input")) })
+            { username: Bacon.$.textFieldValue($("#username input")), fullname: Bacon.$.textFieldValue($("#fullname input")) })
 
         registrationPending = registrationWire.responsePending
         registrationSent = registrationWire.requestEntered
