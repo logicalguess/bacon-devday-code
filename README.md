@@ -35,7 +35,13 @@
           }
 Usage:
 
-        userNameWire = wireAjaxOnChange(Bacon.$.textFieldValue($("#username input")),
+
+        usernameField = $("#username input")
+        fullnameField = $("#fullname input")
+        username = Bacon.$.textFieldValue(usernameField)
+        fullname = Bacon.$.textFieldValue(fullnameField)
+
+        userNameWire = wireAjaxOnChange(username,
             function(user) { return { url : "/usernameavailable/" + user } }, true)
 
         usernameEntered = userNameWire.requestEntered
@@ -44,6 +50,7 @@ Usage:
 
 
         //model
+
         model = Bacon.Model.combine({username: username, fullname: fullname})
         model.onValue(function(m) {
             $("#result").text("")
