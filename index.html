@@ -93,6 +93,10 @@
           registrationSent = registrationWire.requestEntered
           registrationResponse = registrationWire.responseStream
 
+          usernameEntered.onValue(function() {
+              model.lens("fullname").set("")
+
+          })
 
           // button enabled state
           buttonEnabled = usernameEntered.and(fullnameEntered).and(usernameAvailable)
