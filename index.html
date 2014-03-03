@@ -60,8 +60,6 @@
           // username
           username = Bacon.$.textFieldValue(usernameField)
 
-          usernameModel = new Bacon.Model(username)
-
           userNameWire = wireAjaxOnChange(username, function(user) { return { url : "/usernameavailable/" + user } }, true)
 
           usernameEntered = userNameWire.requestEntered
@@ -77,8 +75,19 @@
           fullname = Bacon.$.textFieldValue(fullnameField)
           fullnameEntered = fullname.map(nonEmpty)
 
+          // fullname field enabled state
+          fullnameEnabled = usernameEntered.and(usernameAvailable)
+                  .and(availabilityPending.not())
+
+          //model
+          model = Bacon.Model.combine({username: username, fullname: fullname})
+          model.onValue(function(m) {
+              $("#result").text("")
+              console.log("model", m)
+          })
+
           // registration
-          var registrationWire = wireAjaxOnEvent(registerButton, "click", "/register", { username: username, fullname: fullname })
+          var registrationWire = wireAjaxOnEvent(registerButton, "click", "/register", model.get())
 
           registrationPending = registrationWire.responsePending
           registrationSent = registrationWire.requestEntered
@@ -90,9 +99,13 @@
             .and(availabilityPending.not()).and(registrationSent.not())
 
           // side-effects
+          fullnameEnabled.onValue(setEnabled, fullnameField)
           buttonEnabled.onValue(setEnabled, registerButton)
           registrationPending.onValue(setVisibility, registerAjaxIndicator)
-          registrationResponse.map("Thanks dude!").onValue($("#result"), "text")
+          registrationResponse.onValue(function() {
+              model.set({username: "", fullname: ""})
+              $("#result").text("Thanks dude!")
+          })
       })
     </script>
   </head>

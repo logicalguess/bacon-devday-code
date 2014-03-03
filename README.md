@@ -1,4 +1,7 @@
-## Extracting some patterns on the flows branch
+## Extracting some patterns and using Bacon.Model to manage state
+
+![ ](screen1.png) ![ ](screen2.png)
+![ ](screen3.png) ![ ](screen4.png)
 
           function wireAjaxOnChange(input, urlFunc, init) {
               var request = input.changes().filter(nonEmpty).skipDuplicates()
@@ -15,7 +18,7 @@
           }
 
           function wireAjaxOnEvent(eventSource, eventName, url, dataFormula) {
-              var event = eventSource.asEventStream(eventName).do(".preventDefault")
+              var event = eventSource.asEventStream(eventName).doAction(".preventDefault")
               var request = Bacon.combineTemplate({
                   type: "post",
                   url : url,
@@ -40,12 +43,25 @@ Usage:
         availabilityPending = userNameWire.responsePending
 
 
-        var registrationWire = wireAjaxOnEvent($("#register button"), "click", "/register",
-            { username: Bacon.$.textFieldValue($("#username input")), fullname: Bacon.$.textFieldValue($("#fullname input")) })
+        //model
+        model = Bacon.Model.combine({username: username, fullname: fullname})
+        model.onValue(function(m) {
+            $("#result").text("")
+            console.log("model", m)
+        })
+
+        // registration
+        var registrationWire = wireAjaxOnEvent(registerButton, "click", "/register", model.get())
 
         registrationPending = registrationWire.responsePending
         registrationSent = registrationWire.requestEntered
         registrationResponse = registrationWire.responseStream
+
+        registrationResponse.onValue(function() {
+            model.set({username: "", fullname: ""})
+            $("#result").text("Thanks dude!")
+        })
+
 
 
 ## The Assignment
